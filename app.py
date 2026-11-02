@@ -23,7 +23,7 @@ import streamlit as st
 st.set_page_config(layout="wide", page_title="PKP & PPKP Distribution Review", page_icon="⚖️")
 
 # =============================================================================
-# CONFIG: the 20 task columns.  base = PLACEHOLDER minutes per recorded unit.
+# CONFIG: the 20 task columns, listed in the SAME ORDER as the Excel file (left to right).  base = PLACEHOLDER minutes per recorded unit.
 # Replace with time-study / expert-panel values (edit in the app or upload a CSV).
 # =============================================================================
 TASKS = [
@@ -31,23 +31,23 @@ TASKS = [
     ("kawalan", "Kawalan penyakit berjangkit", "Kawalan PB", "kawalan penyakit berjangkit", "Disease control", 10, 0, "count as recorded"),
     ("sampel", "Persampelan penyakit berjangkit", "Persampelan", "persampelan penyakit", "Disease control", 45, 0, "samples"),
     ("siasat_kes", "Siasatan kes & kontak", "Siasatan kes", "siasatan kes dan kontak", "Disease control", 30, 0, "cases/contacts"),
-    ("bilik", "Bilik gerakan wabak/bencana dibuka", "Bilik gerakan", "bilik gerakan", "Disease control", 600, 20, "activations"),
-    ("survelans", "Laporan aktiviti survelans", "Survelans", "laporan aktiviti survelans", "Disease control", 30, 0, "reports"),
+    ("advokasi", "Advokasi & pendidikan kesihatan", "Advokasi", "advokasi", "Governance & training", 90, 0, "sessions"),
     ("risikan", "Risikan undang-undang kesihatan awam", "Risikan UU", "risikan undang", "Legal", 120, 0, "intelligence ops"),
     ("notis", "Notis kompaun / kompaun", "Kompaun", "notis kompaun", "Legal", 30, 0, "notices"),
     ("kertas", "Kertas siasatan (kesalahan UU KA)", "Kertas siasatan", "kertas siasatan", "Legal", 240, 15, "investigation papers"),
-    ("pewasapan", "Audit pewasapan", "Audit wasap", "audit pewasapan", "Legal", 180, 0, "audits"),
-    ("premis", "Pemeriksaan kesihatan persekitaran di premis", "Periksa premis", "pemeriksaan kesihatan persekitaran", "Environmental / OSH", 30, 0, "premises"),
-    ("makanan_premis", "Penilaian risiko premis makanan", "Risiko premis mkn", "penilaian risiko premis makanan", "Environmental / OSH", 30, 0, "premises"),
     ("osh_audit", "Audit KKP di tempat kerja", "Audit KKP", "audit keselamatan", "Environmental / OSH", 240, 0, "audits"),
     ("osh_siasat", "Notifikasi & siasatan kemalangan/penyakit pekerjaan", "Siasat KKP", "notifikasi dan siasatan kemalangan", "Environmental / OSH", 180, 0, "investigations"),
-    ("air", "Pemantauan kualiti air minum", "Kualiti air", "pemantauan kualiti air", "Environmental / OSH", 45, 0, "samples/visits"),
-    ("kapal", "Pemeriksaan & penilaian risiko kapal/vessel/penumpang", "Kapal/PMA", "kapal", "Points of entry (PMA)", 0.1, 0, "CHECK UNIT: values look like passenger counts"),
-    ("mayat", "Import/eksport mayat, tisu, bahan patogenik", "Mayat/patogen", "mayat", "Points of entry (PMA)", 60, 0, "consignments"),
-    ("makanan_import", "Pemeriksaan & persampelan produk makanan import", "Makanan import", "produk makanan import", "Points of entry (PMA)", 60, 0, "consignments"),
+    ("premis", "Pemeriksaan kesihatan persekitaran di premis", "Periksa premis", "pemeriksaan kesihatan persekitaran", "Environmental / OSH", 30, 0, "premises"),
+    ("bilik", "Bilik gerakan wabak/bencana dibuka", "Bilik gerakan", "bilik gerakan", "Disease control", 600, 20, "activations"),
+    ("survelans", "Laporan aktiviti survelans", "Survelans", "laporan aktiviti survelans", "Disease control", 30, 0, "reports"),
     ("latihan", "Latihan teknikal / amalan profesional PKP/PPKP", "Latihan", "latihan teknikal", "Governance & training", 240, 10, "sessions"),
-    ("advokasi", "Advokasi & pendidikan kesihatan", "Advokasi", "advokasi", "Governance & training", 90, 0, "sessions"),
+    ("mayat", "Import/eksport mayat, tisu, bahan patogenik", "Mayat/patogen", "mayat", "Points of entry (PMA)", 60, 0, "consignments"),
+    ("kapal", "Pemeriksaan & penilaian risiko kapal/vessel/penumpang", "Kapal/PMA", "kapal", "Points of entry (PMA)", 0.1, 0, "CHECK UNIT: values look like passenger counts"),
+    ("makanan_import", "Pemeriksaan & persampelan produk makanan import", "Makanan import", "produk makanan import", "Points of entry (PMA)", 60, 0, "consignments"),
     ("penilaian", "Penilaian risiko kesihatan persekitaran, PB & bencana", "Penilaian risiko", "penilaian risiko kesihatan persekitaran", "Governance & training", 20, 10, "assessments"),
+    ("makanan_premis", "Penilaian risiko premis makanan", "Risiko premis mkn", "penilaian risiko premis makanan", "Environmental / OSH", 30, 0, "premises"),
+    ("air", "Pemantauan kualiti air minum", "Kualiti air", "pemantauan kualiti air", "Environmental / OSH", 45, 0, "samples/visits"),
+    ("pewasapan", "Audit pewasapan", "Audit wasap", "audit pewasapan", "Legal", 180, 0, "audits"),
 ]
 KEYS = [t[0] for t in TASKS]
 LABEL = {t[0]: t[1] for t in TASKS}
@@ -246,7 +246,7 @@ with tab1:
             x=alt.X("PerPPKP:Q", title="units per PPKP"),
             y=alt.Y("District:N", sort="-x", title=None),
             tooltip=["District", alt.Tooltip("Count:Q", format=",.0f"), "PPKP", alt.Tooltip("PerPPKP:Q", format=",.1f")])
-        rule = alt.Chart(pd.DataFrame({"x": [nat]})).mark_rule(color="red", strokeDash=[4, 3]).encode(x="x:Q")
+        rule = alt.Chart(pd.DataFrame({"x": [nat]})).mark_rule(color="red", strokeDash=[4, 3]).encode(x="x:Q", tooltip=[alt.Tooltip("x:Q", title="National average per PPKP", format=",.1f")])
         st.altair_chart(bars + rule, height=520)
     with right:
         st.markdown("**State heatmap** - units per PPKP, indexed to national average = 100")
@@ -260,11 +260,11 @@ with tab1:
             for state, r_ in g.iterrows():
                 rows.append({"State": state, "Task": SHORT[k], "Index": 100 * (r_[k] / r_["PPKP"]) / nat_ratio[k_i]})
         hm = pd.DataFrame(rows)
-        base_c = alt.Chart(hm).encode(x=alt.X("Task:N", sort=[SHORT[k] for k in KEYS], title=None, axis=alt.Axis(labelAngle=-60)),
-                                      y=alt.Y("State:N", title=None))
+        tip = [alt.Tooltip("State:N"), alt.Tooltip("Task:N"), alt.Tooltip("Index:Q", format=".0f")]
+        base_c = alt.Chart(hm).encode(x=alt.X("Task:N", sort=[SHORT[k] for k in KEYS if k in set(hm["Task"].map({v: k for k, v in SHORT.items()}))], title=None, axis=alt.Axis(labelAngle=-60)),
+                                      y=alt.Y("State:N", title=None), tooltip=tip)
         heat = base_c.mark_rect().encode(color=alt.Color("Index:Q", scale=alt.Scale(domain=[0, 100, 250], range=["#4575b4", "#ffffbf", "#d73027"], clamp=True),
-                                                         legend=alt.Legend(title="Index")),
-                                         tooltip=["State", "Task", alt.Tooltip("Index:Q", format=".0f")])
+                                                         legend=alt.Legend(title="Index")))
         txt = base_c.mark_text(fontSize=9).encode(text=alt.Text("Index:Q", format=".0f"))
         st.altair_chart(heat + txt, height=520)
 
@@ -274,10 +274,13 @@ with tab1:
         "PPKP": cur, "PKP": work["PKP"],
         "Applicable tasks": appl.astype(int), "Top-quartile tasks": high.astype(int)})
     prof["Share top-quartile (%)"] = np.where(prof["Applicable tasks"] > 0, 100 * prof["Top-quartile tasks"] / prof["Applicable tasks"].replace(0, np.nan), 0).round(0)
+    prof["Small-number flag"] = np.where(prof["PPKP"] < 5, "⚠️ PPKP < 5: ratio unreliable", "")
     prof = prof.sort_values("Share top-quartile (%)", ascending=False)
     st.dataframe(prof, hide_index=True,
                  column_config={"Share top-quartile (%)": st.column_config.ProgressColumn(min_value=0, max_value=100, format="%.0f%%")})
-    st.caption("A district that is top-quartile on most tasks while having few PPKP is a candidate for review under any weighting. Tasks done in fewer than 8 districts are not ranked.")
+    st.caption("**How to read the share:** higher = the district is among the heaviest-loaded (per PPKP) on a larger part of its tasks; lower = it is rarely among the heaviest. "
+               "By construction the average is about 25%, so ~25% means typical, not 'balanced'. It is a relative ranking of per-PPKP load only (PKP is not used) and says nothing about how many posts are needed. "
+               "Tasks done in fewer than 8 districts are not ranked; ignore high shares where PPKP is very small.")
     st.download_button("📥 Download profile (CSV)", csv_bytes(prof), "stage1_burden_profile.csv", "text/csv")
 
 # =============================================================================
@@ -386,8 +389,10 @@ with tab2:
     st.markdown("**Largest deficits (median gap, bar = P10–P90 range)**")
     topd = res.sort_values("Gap").head(20).copy()
     topd["Label"] = topd["Daerah"] + " (" + topd["Negeri"] + ")"
-    ch = alt.Chart(topd).encode(y=alt.Y("Label:N", sort=alt.EncodingSortField("Gap", order="ascending"), title=None))
-    st.altair_chart(ch.mark_bar(color="#d62728", opacity=0.55).encode(x=alt.X("Gap:Q", title="current − fair share (posts)"), tooltip=["Label", alt.Tooltip("Gap:Q", format="+.1f")])
+    tip2 = [alt.Tooltip("Label:N", title="District"), alt.Tooltip("Gap:Q", title="Median gap", format="+.1f"),
+            alt.Tooltip("Gap_lo:Q", title="Gap (P90 fair)", format="+.1f"), alt.Tooltip("Gap_hi:Q", title="Gap (P10 fair)", format="+.1f")]
+    ch = alt.Chart(topd).encode(y=alt.Y("Label:N", sort=alt.EncodingSortField("Gap", order="ascending"), title=None), tooltip=tip2)
+    st.altair_chart(ch.mark_bar(color="#d62728", opacity=0.55).encode(x=alt.X("Gap:Q", title="current − fair share (posts)"))
                     + ch.mark_rule(color="black").encode(x="Gap_lo:Q", x2="Gap_hi:Q"), height=480)
 
 # =============================================================================
